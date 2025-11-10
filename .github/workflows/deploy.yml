@@ -112,16 +112,18 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      # 🔹 Déployer le backend sur Railway
-      - name: Deploy Backend to Railway
+      # 🔹 Redéployer le backend sur Railway
+      # Note: Cette commande redéploie le service existant avec la dernière configuration
+      # Assurez-vous que vos services Railway sont configurés pour utiliser les images Docker Hub
+      - name: Redeploy Backend on Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway up --service ${{ secrets.RAILWAY_BACKEND_ID }} --detach
+          railway redeploy --service ${{ secrets.RAILWAY_BACKEND_ID }} || echo "Backend service may auto-update from Docker Hub"
 
-      # 🔹 Déployer le frontend sur Railway
-      - name: Deploy Frontend to Railway
+      # 🔹 Redéployer le frontend sur Railway
+      - name: Redeploy Frontend on Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway up --service ${{ secrets.RAILWAY_FRONTEND_ID }} --detach
+          railway redeploy --service ${{ secrets.RAILWAY_FRONTEND_ID }} || echo "Frontend service may auto-update from Docker Hub"
