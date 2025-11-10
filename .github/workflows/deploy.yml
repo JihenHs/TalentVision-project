@@ -6,6 +6,11 @@ on:
       - main
       - develop
       - full-project
+  pull_request:
+    branches:
+      - main
+      - develop
+      - full-project
 
 jobs:
   build-and-test:
@@ -29,6 +34,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # ---- Backend ----
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -37,6 +43,7 @@ jobs:
       - name: Install backend dependencies
         run: |
           cd Backend/TalentVision_Back
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Run Django tests
@@ -49,7 +56,10 @@ jobs:
           DB_USER: postgres
           DB_PASSWORD: secret
           DB_NAME: talentvision_test
+          SECRET_KEY: test-secret-key
+          DEBUG: 'False'
 
+      # ---- Frontend ----
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -63,7 +73,7 @@ jobs:
       - name: Run frontend tests
         run: |
           cd Frontend/TalentVision_front
-          npm test -- --watchAll=false
+          npx vitest run --coverage
 
   docker-deploy:
     needs: build-and-test
