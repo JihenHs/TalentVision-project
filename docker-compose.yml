@@ -13,7 +13,10 @@ services:
       - db_data:/var/lib/postgresql/data
 
   backend:
-    image: talentvision-backend:latest
+    build:
+      context: ./Backend/TalentVision_Back
+      dockerfile: Dockerfile
+    image: tondockerhubusername/talentvision-backend:latest
     environment:
       DATABASE_URL: postgres://postgres:secret@db:5432/talentvision
     ports:
@@ -22,9 +25,12 @@ services:
       - db
 
   frontend:
-    image: talentvision-frontend:latest
+    build:
+      context: ./Frontend/TalentVision_front
+      dockerfile: Dockerfile
+    image: tondockerhubusername/talentvision-frontend:latest
     ports:
-      - "3000:80"
+      - "3000:80"   # ou "3000:3000" si ton Dockerfile sert sur 3000
     depends_on:
       - backend
 
