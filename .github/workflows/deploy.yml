@@ -74,26 +74,32 @@ jobs:
         run: |
           cd Frontend/TalentVision_front
           npx vitest run --coverage
+docker-deploy:
+  needs: build-and-test
+  runs-on: ubuntu-latest
 
-  docker-deploy:
-    needs: build-and-test
-    runs-on: ubuntu-latest
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build and push backend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./Backend/TalentVision_Back
+        file: ./Backend/TalentVision_Back/Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/talentvision-backend:latest
 
-      - name: Build and push Docker images
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/talentvision-backend:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/talentvision-frontend:latest
+    - name: Build and push frontend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./Frontend/TalentVision_front
+        file: ./Frontend/TalentVision_front/Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/talentvision-frontend:latest
