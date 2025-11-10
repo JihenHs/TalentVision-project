@@ -113,17 +113,16 @@ jobs:
         run: npm install -g @railway/cli
 
       # 🔹 Déployer le backend sur Railway
+      # Déployer le backend
       - name: Deploy Backend to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          cd Backend/TalentVision_Back
-          railway up --service ${{ secrets.RAILWAY_BACKEND_ID }} --detach
+          railway up --service ${{ secrets.RAILWAY_BACKEND_ID }} --detach --no-verify
 
-      # 🔹 Déployer le frontend sur Railway
+        # Déployer le frontend
       - name: Deploy Frontend to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          cd Frontend/TalentVision_front
-          railway up --service ${{ secrets.RAILWAY_FRONTEND_ID }} --detach
+          railway up --service ${{ secrets.RAILWAY_FRONTEND_ID }} --detach --no-verify
