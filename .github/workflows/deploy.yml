@@ -83,12 +83,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 🔹 Docker Hub login
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # 🔹 Build & push backend image
       - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
@@ -97,6 +99,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/talentvision-backend:latest
 
+      # 🔹 Build & push frontend image
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
@@ -104,3 +107,22 @@ jobs:
           file: ./Frontend/TalentVision_front/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/talentvision-frontend:latest
+
+      # 🔹 Installer Railway CLI
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      # 🔹 Déployer sur Railway
+      - name: Deploy to Railway Backend
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          cd Backend/TalentVision_Back
+          railway up --service "backend" --detach
+
+      - name: Deploy to Railway Frontend
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          cd Frontend/TalentVision_front
+          railway up --service "frontend" --detach
