@@ -1,0 +1,106 @@
+name: Tests CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: talentvision_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          cd Backend/TalentVision_Back
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run migrations
+        run: |
+          cd Backend/TalentVision_Back
+          python manage.py migrate
+        env:
+          DJANGO_SETTINGS_MODULE: TalentVision_Back.settings
+          USE_POSTGRES: 'True'
+          DB_NAME: talentvision_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
+          SECRET_KEY: test-secret-key
+          DEBUG: 'False'
+      
+      - name: Run tests
+        run: |
+          cd Backend/TalentVision_Back
+          pytest --cov=recruitment --cov=accounts --cov=ai_engine --cov-report=xml --cov-report=term
+        env:
+          DJANGO_SETTINGS_MODULE: TalentVision_Back.settings
+          USE_POSTGRES: 'True'
+          DB_NAME: talentvision_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
+          SECRET_KEY: test-secret-key
+          DEBUG: 'False'
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./Backend/TalentVision_Back/coverage.xml
+          flags: backend
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: Frontend/TalentVision_front/package-lock.json
+      
+      - name: Install dependencies
+        run: |
+          cd Frontend/TalentVision_front
+          npm ci
+      
+      - name: Run tests
+        run: |
+          cd Frontend/TalentVision_front
+          npm test -- --coverage --reporter=verbose
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./Frontend/TalentVision_front/coverage/coverage-final.json
+          flags: frontend
+

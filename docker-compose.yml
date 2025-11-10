@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: talentvision
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    image: talentvision-backend:latest
+    environment:
+      DATABASE_URL: postgres://postgres:secret@db:5432/talentvision
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  frontend:
+    image: talentvision-frontend:latest
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
