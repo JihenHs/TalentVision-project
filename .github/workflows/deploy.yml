@@ -118,11 +118,11 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway up --service ${{ secrets.RAILWAY_BACKEND_ID }} --detach --no-verify
+          railway up --service ${{ secrets.RAILWAY_BACKEND_ID }} --detach -- --no-verify
 
         # Déployer le frontend
       - name: Deploy Frontend to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway up --service ${{ secrets.RAILWAY_FRONTEND_ID }} --detach --no-verify
+          railway up --service ${{ secrets.RAILWAY_FRONTEND_ID }} --detach -- --no-verify
