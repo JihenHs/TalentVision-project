@@ -7,7 +7,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import JobPosts from '../JobPosts';
 import * as authModule from '../../lib/auth';
-import api from '../../lib/api';
 
 // Mock de l'API
 const mockApiGet = vi.fn();

@@ -4,7 +4,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
-import React from 'react';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import * as authModule from '../../lib/auth';
 

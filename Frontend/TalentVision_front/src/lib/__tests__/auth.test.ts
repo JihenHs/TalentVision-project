@@ -1,7 +1,7 @@
 /**
  * Tests pour le module d'authentification
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { authService } from '../auth';
 
 describe('Auth Service', () => {

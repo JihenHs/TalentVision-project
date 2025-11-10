@@ -6,7 +6,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import Alerts from '../Alerts';
-import api from '../../lib/api';
 
 // Mock de l'API
 const mockApiGet = vi.fn();
