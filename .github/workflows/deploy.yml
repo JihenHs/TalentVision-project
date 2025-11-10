@@ -112,17 +112,22 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      # 🔹 Déployer sur Railway
-      - name: Deploy to Railway Backend
+      # 🔹 Déployer le backend sur Railway
+      - name: Deploy Backend to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_BACKEND_ID }}
         run: |
           cd Backend/TalentVision_Back
-          railway up --service "backend" --detach
+          railway link $RAILWAY_SERVICE_ID
+          railway up --detach
 
-      - name: Deploy to Railway Frontend
+      # 🔹 Déployer le frontend sur Railway
+      - name: Deploy Frontend to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_FRONTEND_ID }}
         run: |
           cd Frontend/TalentVision_front
-          railway up --service "frontend" --detach
+          railway link $RAILWAY_SERVICE_ID
+          railway up --detach
