@@ -116,18 +116,14 @@ jobs:
       - name: Deploy Backend to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_BACKEND_ID }}
         run: |
           cd Backend/TalentVision_Back
-          railway link $RAILWAY_SERVICE_ID
-          railway up --detach
+          railway up --service ${{ secrets.RAILWAY_BACKEND_ID }} --detach
 
       # 🔹 Déployer le frontend sur Railway
       - name: Deploy Frontend to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_FRONTEND_ID }}
         run: |
           cd Frontend/TalentVision_front
-          railway link $RAILWAY_SERVICE_ID
-          railway up --detach
+          railway up --service ${{ secrets.RAILWAY_FRONTEND_ID }} --detach
