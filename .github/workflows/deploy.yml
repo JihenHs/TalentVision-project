@@ -108,25 +108,21 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/talentvision-frontend:latest
 
-      # 🔹 Redéployer les services Railway
-      # Note: Les images Docker ont été poussées sur Docker Hub.
-      # Si vos services Railway sont configurés pour utiliser Docker Hub,
-      # ils se mettront à jour automatiquement.
-      # 
-      # Alternative: Utilisez l'intégration GitHub native de Railway pour un déploiement automatique
-      # depuis le code source (sans Docker Hub).
-      - name: Redeploy Backend on Railway
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          # Utiliser Railway CLI pour redéployer le service
-          railway redeploy --service ${{ secrets.RAILWAY_BACKEND_ID }} || \
-          echo "Note: Si le service utilise Docker Hub, il se mettra à jour automatiquement"
+      # 🔹 Installer Railway CLI
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
 
-      - name: Redeploy Frontend on Railway
+      # 🔹 Déployer le backend sur Railway
+      # Déployer le backend
+      - name: Deploy Backend to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          # Utiliser Railway CLI pour redéployer le service
-          railway redeploy --service ${{ secrets.RAILWAY_FRONTEND_ID }} || \
-          echo "Note: Si le service utilise Docker Hub, il se mettra à jour automatiquement"
+          railway up --service ${{ secrets.RAILWAY_BACKEND_ID }} --detach -- --no-verify
+
+        # Déployer le frontend
+      - name: Deploy Frontend to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway up --service ${{ secrets.RAILWAY_FRONTEND_ID }} --detach -- --no-verify
