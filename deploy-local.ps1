@@ -1,21 +1,13 @@
-$namespace = "default"
-$dockerUser = "tonuser"
+# 1. Build backend image localement
+docker build -t talentvision-backend:latest ./Backend/TalentVision_Back
 
-Write-Host "Pull latest images..."
-docker pull "$dockerUser/talentvision-backend:latest"
-docker pull "$dockerUser/talentvision-frontend:latest"
+# 2. Build frontend image localement
+docker build -t talentvision-frontend:latest ./Frontend/TalentVision_front
 
-Write-Host " Apply Kubernetes manifests..."
+# 3. Appliquer les manifests Kubernetes
 kubectl apply -f kubernetes/deployment.yaml
 kubectl apply -f kubernetes/service.yaml
 
-Write-Host " Update deployments with latest images..."
-kubectl set image deployment/talentvision-backend backend="$dockerUser/talentvision-backend:latest" --record
-kubectl set image deployment/talentvision-frontend frontend="$dockerUser/talentvision-frontend:latest" --record
-
-Write-Host " Wait for rollout..."
-kubectl rollout status deployment/talentvision-backend
-kubectl rollout status deployment/talentvision-frontend
-
-Write-Host " Pods status:"
-kubectl get pods
+# 4. Mettre à jour les images des déploiements
+kubectl set image deployment/talentvision-backend backend=talentvision-backend:latest --namespace=default
+kubectl set image deployment/talentvision-frontend frontend=talentvision-frontend:latest --namespace=default

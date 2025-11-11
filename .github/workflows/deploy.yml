@@ -80,7 +80,7 @@ jobs:
           cd Frontend/TalentVision_front
           npx vitest run --coverage
 
-  docker-and-k8s-deploy:
+  docker-Hub-deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
 
