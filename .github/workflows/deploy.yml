@@ -6,6 +6,11 @@ on:
       - main
       - develop
       - full-project
+  pull_request:
+    branches:
+      - main
+      - develop
+      - full-project
 
 env:
   DOCKER_IMAGE_BACK: ${{ secrets.DOCKERHUB_USERNAME }}/talentvision-backend
@@ -13,35 +18,105 @@ env:
   K8S_NAMESPACE: default
 
 jobs:
-  build-and-test:
+  backend-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: talentvision_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install backend dependencies
+        run: |
+          cd Backend/TalentVision_Back
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run migrations
+        run: |
+          cd Backend/TalentVision_Back
+          python manage.py migrate
+        env:
+          DJANGO_SETTINGS_MODULE: TalentVision_Back.settings
+          USE_POSTGRES: 'True'
+          DB_NAME: talentvision_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
+          SECRET_KEY: test-secret-key
+          DEBUG: 'False'
+
+      - name: Run backend tests
+        run: |
+          cd Backend/TalentVision_Back
+          pytest --cov=recruitment --cov=accounts --cov=ai_engine --cov-report=xml --cov-report=term
+        env:
+          DJANGO_SETTINGS_MODULE: TalentVision_Back.settings
+          USE_POSTGRES: 'True'
+          DB_NAME: talentvision_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
+          SECRET_KEY: test-secret-key
+          DEBUG: 'False'
+
+      - name: Upload backend coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./Backend/TalentVision_Back/coverage.xml
+          flags: backend
+
+  frontend-tests:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
 
-      # Backend tests
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - run: |
-          cd Backend/TalentVision_Back
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          python manage.py test
-
-      # Frontend tests
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-      - run: |
+          cache: 'npm'
+          cache-dependency-path: Frontend/TalentVision_front/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
           cd Frontend/TalentVision_front
           npm ci
-          npx vitest run --coverage
+
+      - name: Run frontend tests
+        run: |
+          cd Frontend/TalentVision_front
+          npm test -- --coverage --reporter=verbose
+
+      - name: Upload frontend coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./Frontend/TalentVision_front/coverage/coverage-final.json
+          flags: frontend
 
   docker-hub-deploy:
-    needs: build-and-test
+    needs: [backend-tests, frontend-tests]
     runs-on: ubuntu-latest
 
     steps:
@@ -53,7 +128,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push backend
+      - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
           context: ./Backend/TalentVision_Back
@@ -63,7 +138,7 @@ jobs:
             ${{ env.DOCKER_IMAGE_BACK }}:latest
             ${{ env.DOCKER_IMAGE_BACK }}:${{ github.sha }}
 
-      - name: Build and push frontend
+      - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
           context: ./Frontend/TalentVision_front
@@ -78,15 +153,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
         with:
           version: v1.28.2
 
-      - name: Configure kubeconfig (local or K3d)
+      - name: Configure kubeconfig
         run: |
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
