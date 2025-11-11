@@ -174,3 +174,4 @@ jobs:
         run: |
           kubectl set image deployment/talentvision-backend backend=${{ env.DOCKER_IMAGE_BACK }}:latest --namespace=default
           kubectl set image deployment/talentvision-frontend frontend=${{ env.DOCKER_IMAGE_FRONT }}:latest --namespace=default
+
