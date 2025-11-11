@@ -155,22 +155,32 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Installer kind pour créer un cluster éphémère
-      - name: Setup Kind
-        uses: engineerd/setup-kind@v0.5.0
-        with:
-          version: v0.21.0
-
       # Installer kubectl
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
         with:
           version: v1.28.2
 
-      # Créer le cluster Kind
-      - name: Create Kind Cluster
+      # Installer k3d pour cluster local (optionnel si tu utilises Kind)
+      - name: Setup k3d
         run: |
-          kind create cluster --name talentvision
+          curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+          k3d version
+
+      # Créer un cluster K3d éphémère
+      - name: Create K3d Cluster
+        run: |
+          k3d cluster create talentvision --wait
+
+      # Configurer kubeconfig automatiquement
+      - name: Export Kubeconfig
+        run: |
+          k3d kubeconfig get talentvision > $HOME/.kube/config
+          cat $HOME/.kube/config
+
+      # Vérifier le cluster
+      - name: Check cluster nodes
+        run: kubectl get nodes
 
       # Appliquer les manifests Kubernetes
       - name: Apply Kubernetes manifests
