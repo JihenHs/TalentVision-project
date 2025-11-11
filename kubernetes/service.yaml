@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: talentvision-frontend-svc
+spec:
+  type: LoadBalancer
+  selector:
+    app: talentvision-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

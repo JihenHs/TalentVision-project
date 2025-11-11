@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: talentvision-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: talentvision-backend
+  template:
+    metadata:
+      labels:
+        app: talentvision-backend
+    spec:
+      containers:
+        - name: backend
+          image: REPLACE_WITH_IMAGE
+          ports:
+            - containerPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: talentvision-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: talentvision-frontend
+  template:
+    metadata:
+      labels:
+        app: talentvision-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: REPLACE_WITH_IMAGE
+          ports:
+            - containerPort: 80
