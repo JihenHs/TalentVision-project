@@ -118,7 +118,7 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           cd Backend/TalentVision_Back
-          railway up --detach
+          railway up --detach -- --service 4643692f-97db-4d3d-aa39-fd523e357438
 
       # ---- Déployer le frontend sur Railway ----
       - name: Deploy Frontend to Railway
@@ -126,12 +126,12 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           cd Frontend/TalentVision_front
-          railway up --detach
+          railway up --detach -- --service 10b1d91f-d9ac-4a23-88d0-8beb2a5b2ca8
 
-      # ---- Déployer la base de données sur Railway (optionnel) ----
+      # ---- Déployer la base de données sur Railway ----
       - name: Deploy Database to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           cd Backend/TalentVision_Back
-          railway up --detach
+          railway up --detach -- --service 2b4abb77-7a44-455d-baf0-d4b0204abec4
