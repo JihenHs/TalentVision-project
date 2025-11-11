@@ -117,30 +117,27 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway up \
+          railway up --detach -- \
             --project c0fc05c4-4c51-40a2-b86e-556bb7291736 \
             --service 4643692f-97db-4d3d-aa39-fd523e357438 \
-            --environment 2d226064-0670-4560-aab4-8a909a1ccf2b \
-            --detach
+            --environment 2d226064-0670-4560-aab4-8a909a1ccf2b
 
       # ---- Déployer le frontend sur Railway ----
       - name: Deploy Frontend to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway up \
+          railway up --detach -- \
             --project c0fc05c4-4c51-40a2-b86e-556bb7291736 \
             --service 10b1d91f-d9ac-4a23-88d0-8beb2a5b2ca8 \
-            --environment 2d226064-0670-4560-aab4-8a909a1ccf2b \
-            --detach
+            --environment 2d226064-0670-4560-aab4-8a909a1ccf2b
 
-      # ---- Déployer la base de données si nécessaire ----
+      # ---- Déployer la base de données sur Railway (optionnel) ----
       - name: Deploy Database to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway up \
+          railway up --detach -- \
             --project c0fc05c4-4c51-40a2-b86e-556bb7291736 \
             --service 2b4abb77-7a44-455d-baf0-d4b0204abec4 \
-            --environment 2d226064-0670-4560-aab4-8a909a1ccf2b \
-            --detach
+            --environment 2d226064-0670-4560-aab4-8a909a1ccf2b
