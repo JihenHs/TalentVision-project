@@ -1,3 +1,23 @@
+# --------------------------
+# Service PostgreSQL
+# --------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: talentvision-db
+spec:
+  selector:
+    app: talentvision-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+# --------------------------
+# Service Backend
+# --------------------------
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -10,6 +30,10 @@ spec:
     - protocol: TCP
       port: 8000
       targetPort: 8000
+
+# --------------------------
+# Service Frontend
+# --------------------------
 ---
 apiVersion: v1
 kind: Service
@@ -22,4 +46,4 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 80
+      targetPort: 3000

@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 // En développement, utiliser le proxy Vite (contourne CORS)
-// En production, utiliser l'URL complète de l'API
-const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'http://localhost:8000/api');
+// En production, utiliser le proxy nginx qui redirige /api vers le backend
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
