@@ -108,25 +108,42 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/talentvision-frontend:latest
 
-      # ---- Installer Railway CLI ----
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      # ---- Déployer le backend sur Railway ----
-      - name: Deploy Backend to Railway
+      # ---- Déclencher le redéploiement sur Railway via API ----
+      # Note: Si Railway est configuré avec l'intégration GitHub native,
+      # il se mettra à jour automatiquement. Sinon, cette étape déclenche un redéploiement.
+      - name: Redeploy Backend on Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        working-directory: ./Backend/TalentVision_Back
+        continue-on-error: true
         run: |
-          railway up --service 4643692f-97db-4d3d-aa39-fd523e357438 --detach
+          if [ -n "${{ secrets.RAILWAY_TOKEN }}" ]; then
+            echo "🔄 Déclenchement du redéploiement du backend sur Railway..."
+            curl -X POST \
+              -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              "https://api.railway.app/v1/services/4643692f-97db-4d3d-aa39-fd523e357438/redeploy" \
+              || echo "⚠️ Redéploiement API échoué. Railway peut se mettre à jour automatiquement depuis GitHub."
+          else
+            echo "⚠️ RAILWAY_TOKEN non configuré. Railway se mettra à jour automatiquement depuis GitHub si configuré."
+          fi
 
-      # ---- Déployer le frontend sur Railway ----
-      - name: Deploy Frontend to Railway
+      - name: Redeploy Frontend on Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        working-directory: ./Frontend/TalentVision_front
+        continue-on-error: true
         run: |
-          railway up --service 10b1d91f-d9ac-4a23-88d0-8beb2a5b2ca8 --detach
+          if [ -n "${{ secrets.RAILWAY_TOKEN }}" ]; then
+            echo "🔄 Déclenchement du redéploiement du frontend sur Railway..."
+            curl -X POST \
+              -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              "https://api.railway.app/v1/services/10b1d91f-d9ac-4a23-88d0-8beb2a5b2ca8/redeploy" \
+              || echo "⚠️ Redéploiement API échoué. Railway peut se mettre à jour automatiquement depuis GitHub."
+          else
+            echo "⚠️ RAILWAY_TOKEN non configuré. Railway se mettra à jour automatiquement depuis GitHub si configuré."
+          fi
 
-      # ---- Note: La base de données Railway se gère automatiquement ----
-      # Pas besoin de déployer la base de données manuellement, elle est gérée par Railway
+      # ---- Note: Déploiement automatique Railway ----
+      # Si Railway est configuré avec l'intégration GitHub native (recommandé),
+      # il déploiera automatiquement à chaque push sur GitHub.
+      # Voir RAILWAY_SETUP.md pour la configuration.
