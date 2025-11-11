@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: REPLACE_BACK_IMAGE
+          image: talentvision-backend:latest
           ports:
             - containerPort: 8000
 ---
@@ -34,6 +34,6 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: REPLACE_FRONT_IMAGE
+          image: talentvision-frontend:latest
           ports:
             - containerPort: 80

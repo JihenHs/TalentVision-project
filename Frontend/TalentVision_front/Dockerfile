@@ -19,9 +19,10 @@ RUN npm run build
 FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker-entrypoint.sh /docker-entrypoint.d/99-configure-dns.sh
+
+# Rendre le script exécutable
+RUN chmod +x /docker-entrypoint.d/99-configure-dns.sh
 
 # Exposer le port 80
 EXPOSE 80
-
-# Lancer Nginx
-CMD ["nginx", "-g", "daemon off;"]
