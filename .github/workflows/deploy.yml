@@ -116,34 +116,3 @@ jobs:
           tags: |
             ${{ env.DOCKER_IMAGE_FRONT }}:latest
             ${{ env.DOCKER_IMAGE_FRONT }}:${{ github.sha }}
-
-      # ---- Install kubectl ----
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: 'latest'
-
-      # ---- Configure kubeconfig from secret ----
-      - name: Configure kubeconfig
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
-          chmod 600 ~/.kube/config
-
-      # ---- Apply manifests and update deployments to use the new images ----
-      - name: Deploy to Kubernetes
-        run: |
-          # Apply manifests (creates deployments/service if absent)
-          kubectl --namespace=${{ env.K8S_NAMESPACE }} apply -f kubernetes/deployment.yaml
-          kubectl --namespace=${{ env.K8S_NAMESPACE }} apply -f kubernetes/service.yaml
-
-          # Set images to the version tagged with the commit SHA (traceable)
-          kubectl --namespace=${{ env.K8S_NAMESPACE }} set image deployment/talentvision-backend backend=${{ env.DOCKER_IMAGE_BACK }}:${{ github.sha }} --record || true
-          kubectl --namespace=${{ env.K8S_NAMESPACE }} set image deployment/talentvision-frontend frontend=${{ env.DOCKER_IMAGE_FRONT }}:${{ github.sha }} --record || true
-
-          # Watch rollout status
-          kubectl --namespace=${{ env.K8S_NAMESPACE }} rollout status deployment/talentvision-backend --timeout=120s || true
-          kubectl --namespace=${{ env.K8S_NAMESPACE }} rollout status deployment/talentvision-frontend --timeout=120s || true
-
-          # Liste des pods pour debug rapide
-          kubectl get pods --namespace=${{ env.K8S_NAMESPACE }}

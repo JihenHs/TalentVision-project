@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: talentvision-frontend-svc
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: talentvision-frontend
   ports:
