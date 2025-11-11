@@ -116,22 +116,17 @@ jobs:
       - name: Deploy Backend to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        working-directory: ./Backend/TalentVision_Back
         run: |
-          cd Backend/TalentVision_Back
-          railway up --detach -- --service 4643692f-97db-4d3d-aa39-fd523e357438
+          railway up --service 4643692f-97db-4d3d-aa39-fd523e357438 --detach
 
       # ---- Déployer le frontend sur Railway ----
       - name: Deploy Frontend to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        working-directory: ./Frontend/TalentVision_front
         run: |
-          cd Frontend/TalentVision_front
-          railway up --detach -- --service 10b1d91f-d9ac-4a23-88d0-8beb2a5b2ca8
+          railway up --service 10b1d91f-d9ac-4a23-88d0-8beb2a5b2ca8 --detach
 
-      # ---- Déployer la base de données sur Railway ----
-      - name: Deploy Database to Railway
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          cd Backend/TalentVision_Back
-          railway up --detach -- --service 2b4abb77-7a44-455d-baf0-d4b0204abec4
+      # ---- Note: La base de données Railway se gère automatiquement ----
+      # Pas besoin de déployer la base de données manuellement, elle est gérée par Railway
