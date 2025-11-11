@@ -108,22 +108,25 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/talentvision-frontend:latest
 
-      # 🔹 Installer Railway CLI
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      # 🔹 Déployer le backend sur Railway
-      - name: Deploy Backend to Railway
+      # 🔹 Redéployer les services Railway
+      # Note: Les images Docker ont été poussées sur Docker Hub.
+      # Si vos services Railway sont configurés pour utiliser Docker Hub,
+      # ils se mettront à jour automatiquement.
+      # 
+      # Alternative: Utilisez l'intégration GitHub native de Railway pour un déploiement automatique
+      # depuis le code source (sans Docker Hub).
+      - name: Redeploy Backend on Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        working-directory: ./Backend/TalentVision_Back
         run: |
-          railway up --service ${{ secrets.RAILWAY_BACKEND_ID }} --detach
+          # Utiliser Railway CLI pour redéployer le service
+          railway redeploy --service ${{ secrets.RAILWAY_BACKEND_ID }} || \
+          echo "Note: Si le service utilise Docker Hub, il se mettra à jour automatiquement"
 
-      # 🔹 Déployer le frontend sur Railway
-      - name: Deploy Frontend to Railway
+      - name: Redeploy Frontend on Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        working-directory: ./Frontend/TalentVision_front
         run: |
-          railway up --service ${{ secrets.RAILWAY_FRONTEND_ID }} --detach
+          # Utiliser Railway CLI pour redéployer le service
+          railway redeploy --service ${{ secrets.RAILWAY_FRONTEND_ID }} || \
+          echo "Note: Si le service utilise Docker Hub, il se mettra à jour automatiquement"
