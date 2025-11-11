@@ -6,11 +6,6 @@ on:
       - main
       - develop
       - full-project
-  pull_request:
-    branches:
-      - main
-      - develop
-      - full-project
 
 env:
   DOCKER_IMAGE_BACK: ${{ secrets.DOCKERHUB_USERNAME }}/talentvision-backend
@@ -20,83 +15,45 @@ env:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: secret
-          POSTGRES_DB: talentvision_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      # ---- Backend ----
+      # Backend tests
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
-
-      - name: Install backend dependencies
-        run: |
+          python-version: '3.11'
+      - run: |
           cd Backend/TalentVision_Back
-          python -m pip install --upgrade pip
+          pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Run Django tests
-        run: |
-          cd Backend/TalentVision_Back
           python manage.py test
-        env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_USER: postgres
-          DB_PASSWORD: secret
-          DB_NAME: talentvision_test
-          SECRET_KEY: test-secret-key
-          DEBUG: 'False'
 
-      # ---- Frontend ----
+      # Frontend tests
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "20"
-
-      - name: Install frontend dependencies
-        run: |
+          node-version: '20'
+      - run: |
           cd Frontend/TalentVision_front
           npm ci
-
-      - name: Run frontend tests
-        run: |
-          cd Frontend/TalentVision_front
           npx vitest run --coverage
 
-  docker-Hub-deploy:
+  docker-hub-deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      # ---- Docker Hub login ----
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # ---- Build & push backend image (latest + sha) ----
-      - name: Build and push backend image
+      - name: Build and push backend
         uses: docker/build-push-action@v5
         with:
           context: ./Backend/TalentVision_Back
@@ -106,8 +63,7 @@ jobs:
             ${{ env.DOCKER_IMAGE_BACK }}:latest
             ${{ env.DOCKER_IMAGE_BACK }}:${{ github.sha }}
 
-      # ---- Build & push frontend image (latest + sha) ----
-      - name: Build and push frontend image
+      - name: Build and push frontend
         uses: docker/build-push-action@v5
         with:
           context: ./Frontend/TalentVision_front
@@ -116,3 +72,31 @@ jobs:
           tags: |
             ${{ env.DOCKER_IMAGE_FRONT }}:latest
             ${{ env.DOCKER_IMAGE_FRONT }}:${{ github.sha }}
+
+  kubernetes-deploy:
+    needs: docker-hub-deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: v1.28.2
+
+      - name: Configure kubeconfig (local or K3d)
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f kubernetes/deployment.yaml
+          kubectl apply -f kubernetes/service.yaml
+
+      - name: Update images in deployment
+        run: |
+          kubectl set image deployment/talentvision-backend backend=${{ env.DOCKER_IMAGE_BACK }}:latest --namespace=default
+          kubectl set image deployment/talentvision-frontend frontend=${{ env.DOCKER_IMAGE_FRONT }}:latest --namespace=default
