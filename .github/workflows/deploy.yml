@@ -118,7 +118,7 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         working-directory: ./Backend/TalentVision_Back
         run: |
-          railway up --service ${{ secrets.RAILWAY_BACKEND_ID }} --project ${{ secrets.RAILWAY_PROJECT_ID }} --detach
+          railway up --service ${{ secrets.RAILWAY_BACKEND_ID }} --detach
 
       # 🔹 Déployer le frontend sur Railway
       - name: Deploy Frontend to Railway
@@ -126,4 +126,4 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         working-directory: ./Frontend/TalentVision_front
         run: |
-          railway up --service ${{ secrets.RAILWAY_FRONTEND_ID }} --project ${{ secrets.RAILWAY_PROJECT_ID }} --detach
+          railway up --service ${{ secrets.RAILWAY_FRONTEND_ID }} --detach
